@@ -1,9 +1,40 @@
 import { Play } from 'phosphor-react'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import * as z from 'zod'
+
+const newCycleFormValidationSchema = z.object({
+  task: z.string().min(1, 'Informe a tarefa'),
+  minutesAmount: z
+    .number()
+    .min(5, 'O ciclo precisa ser de no máximo 5 minutos')
+    .max(60, 'O ciclo precisa ser de no máximo 60 minutos'),
+})
+
+type NewCycleForm = z.infer<typeof newCycleFormValidationSchema>
 
 export default function Home() {
+  const { register, handleSubmit, watch } = useForm<NewCycleForm>({
+    resolver: zodResolver(newCycleFormValidationSchema),
+    defaultValues: {
+      minutesAmount: 0,
+      task: '',
+    },
+  })
+
+  function handleCreateNewCycle(data: NewCycleForm) {
+    console.log(data)
+  }
+
+  const task = watch('task')
+  const isSubmitDisabled = !task
+
   return (
     <main className="flex-1 flex flex-col items-center justify-center">
-      <form className="flex flex-col items-center gap-14">
+      <form
+        onSubmit={handleSubmit(handleCreateNewCycle)}
+        className="flex flex-col items-center gap-14"
+      >
         <div className="w-full flex items-center justify-center gap-2 text-neutral-200 text-lg font-bold flex-wrap">
           <label htmlFor="task">Vou trabalhar em</label>
           <input
@@ -12,6 +43,7 @@ export default function Home() {
             id="task"
             type="text"
             list="task-suggestion"
+            {...register('task')}
           />
 
           <datalist id="task-suggestion">
@@ -27,6 +59,7 @@ export default function Home() {
             min={5}
             max={60}
             placeholder="00"
+            {...register('minutesAmount', { valueAsNumber: true })}
           />
           <span>minutos.</span>
         </div>
@@ -44,6 +77,7 @@ export default function Home() {
         <button
           type="submit"
           className="bg-emerald-600 text-neutral-200 flex items-center justify-center rounded-lg w-full p-4 gap-2 cursor-pointer font-bold enabled:hover:bg-emerald-700 transition disabled:bg-opacity-70 disabled:cursor-not-allowed"
+          disabled={isSubmitDisabled}
         >
           <Play size={24} />
           Começar
