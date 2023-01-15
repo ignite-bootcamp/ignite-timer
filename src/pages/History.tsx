@@ -1,3 +1,5 @@
+import { Status } from '@ui/Status'
+
 export default function History() {
   return (
     <main className="flex-1 p-14 flex flex-col">
@@ -33,7 +35,7 @@ export default function History() {
                 Há cerca de 2 horas
               </td>
               <td className="bg-neutral-700/30 border-t-4 border-t-neutral-800/80 text-sm p-4">
-                Concluído
+                <Status statusColor="red">Concluído</Status>
               </td>
             </tr>
           </tbody>
