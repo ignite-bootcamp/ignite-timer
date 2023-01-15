@@ -6,3 +6,7 @@ html {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: antialiased;
 }
+
+input::-webkit-calendar-picker-indicator {
+  display: none !important;
+}
