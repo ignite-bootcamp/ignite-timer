@@ -12,9 +12,9 @@ export function Header() {
           title="Timer"
           className={({ isActive }) =>
             classnames(
-              'w-12 h-12 flex justify-center items-center text-neutral-300 border-b-green-500 border-t-transparent hover:border-b-2 hover:border-t-2',
+              'w-12 h-12 flex justify-center items-center text-neutral-200 border-b-emerald-500 border-t-transparent hover:border-b-2 hover:border-t-2',
               {
-                'text-green-500': isActive,
+                'text-emerald-500': isActive,
               },
             )
           }
@@ -26,9 +26,9 @@ export function Header() {
           title="Histórico"
           className={({ isActive }) =>
             classnames(
-              'w-12 h-12 flex justify-center items-center text-neutral-300 border-b-green-500 border-t-transparent hover:border-b-2 hover:border-t-2',
+              'w-12 h-12 flex justify-center items-center text-neutral-200 border-b-emerald-500 border-t-transparent hover:border-b-2 hover:border-t-2',
               {
-                'text-green-500': isActive,
+                'text-emerald-500': isActive,
               },
             )
           }
