@@ -2,6 +2,7 @@ import { Play } from 'phosphor-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import * as z from 'zod'
+import { useState } from 'react'
 
 const newCycleFormValidationSchema = z.object({
   task: z.string().min(1, 'Informe a tarefa'),
@@ -13,7 +14,16 @@ const newCycleFormValidationSchema = z.object({
 
 type NewCycleForm = z.infer<typeof newCycleFormValidationSchema>
 
+interface Cycle {
+  id: string
+  task: string
+  minutesAmount: number
+}
+
 export default function Home() {
+  const [cycles, setCycles] = useState<Cycle[]>([])
+  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
+  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
   const { register, handleSubmit, watch, reset } = useForm<NewCycleForm>({
     resolver: zodResolver(newCycleFormValidationSchema),
     defaultValues: {
@@ -22,10 +32,30 @@ export default function Home() {
     },
   })
 
-  function handleCreateNewCycle(data: NewCycleForm) {
-    console.log(data)
+  function handleCreateNewCycle({ minutesAmount, task }: NewCycleForm) {
+    const id = String(new Date().getTime())
+    const newCycle: Cycle = {
+      id,
+      minutesAmount,
+      task,
+    }
+
+    setCycles((prevState) => [...prevState, newCycle])
+    setActiveCycleId(id)
+
     reset()
   }
+
+  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
+
+  const totalSeconds = activeCycle ? activeCycle.minutesAmount * 60 : 0
+  const currentSeconds = activeCycle ? totalSeconds - amountSecondsPassed : 0
+
+  const minutesAmount = Math.floor(currentSeconds / 60)
+  const secondsAmount = currentSeconds % 60
+
+  const minutes = String(minutesAmount).padStart(2, '0')
+  const seconds = String(secondsAmount).padStart(2, '0')
 
   const task = watch('task')
   const isSubmitDisabled = !task
@@ -66,13 +96,21 @@ export default function Home() {
         </div>
 
         <div className="font-mono text-[10rem] leading-[8rem] text-neutral-200 flex gap-4 font-bold">
-          <span className="bg-neutral-700/30 py-8 px-4 rounded">0</span>
-          <span className="bg-neutral-700/30 py-8 px-4 rounded">0</span>
+          <span className="bg-neutral-700/30 py-8 px-4 rounded">
+            {minutes[0]}
+          </span>
+          <span className="bg-neutral-700/30 py-8 px-4 rounded">
+            {minutes[1]}
+          </span>
           <div className="py-8 text-emerald-600 w-16 overflow-hidden flex justify-center">
             :
           </div>
-          <span className="bg-neutral-700/30 py-8 px-4 rounded">0</span>
-          <span className="bg-neutral-700/30 py-8 px-4 rounded">0</span>
+          <span className="bg-neutral-700/30 py-8 px-4 rounded">
+            {seconds[0]}
+          </span>
+          <span className="bg-neutral-700/30 py-8 px-4 rounded">
+            {seconds[1]}
+          </span>
         </div>
 
         <button
