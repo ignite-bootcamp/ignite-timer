@@ -1,11 +1,12 @@
 import classnames from 'classnames'
 import { Scroll, Timer } from 'phosphor-react'
 import { NavLink } from 'react-router-dom'
+import igniteLogo from '../assets/ignite-logo.svg'
 
 export function Header() {
   return (
     <header className="flex items-center justify-between">
-      <figure>image</figure>
+      <img src={igniteLogo} alt="" />
       <nav className="flex items-center gap-2">
         <NavLink
           to="/"

@@ -16,6 +16,7 @@ interface CyclesContextType {
   activeCycle: Cycle | undefined
   activeCycleId: string | null
   amountSecondsPassed: number
+  cycles: Cycle[]
   markCurrentCycleAsFinished: () => void
   setSecondsPassed: (seconds: number) => void
   createNewCycle: (cycle: CreateNewCycle) => void
@@ -83,11 +84,13 @@ export function CyclesProvider({ children }: PropsWithChildren) {
       setSecondsPassed,
       interruptCycle,
       createNewCycle,
+      cycles,
     }),
     [
       activeCycle,
       activeCycleId,
       amountSecondsPassed,
+      cycles,
       interruptCycle,
       markCurrentCycleAsFinished,
     ],
