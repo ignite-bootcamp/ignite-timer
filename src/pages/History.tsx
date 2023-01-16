@@ -1,4 +1,6 @@
 import { Status } from '@ui/Status'
+import { formatDistanceToNow } from 'date-fns'
+import { ptBR } from 'date-fns/locale'
 import { useContext } from 'react'
 import { CyclesContext } from '../context/CyclesContext'
 
@@ -37,7 +39,10 @@ export default function History() {
                   {cycle.minutesAmount} minutos
                 </td>
                 <td className="bg-neutral-700/30 border-t-4 border-t-neutral-800/80 text-sm p-4">
-                  {cycle.startDate.toISOString()}
+                  {formatDistanceToNow(cycle.startDate, {
+                    addSuffix: true,
+                    locale: ptBR,
+                  })}
                 </td>
                 <td className="bg-neutral-700/30 border-t-4 border-t-neutral-800/80 text-sm p-4">
                   {cycle.finishedDate && (
