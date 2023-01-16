@@ -1,12 +1,13 @@
-import { createContext, useState } from 'react'
 import { HandPalm, Play } from 'phosphor-react'
 import { NewCycleForm } from './components/NewCycleForm'
 import { Countdown } from './components/Countdown'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { FormProvider, useForm } from 'react-hook-form'
 import * as z from 'zod'
+import { useContext } from 'react'
+import { CyclesContext } from '../../context/CyclesContext'
 
-interface Cycle {
+export interface Cycle {
   id: string
   task: string
   minutesAmount: number
@@ -14,16 +15,6 @@ interface Cycle {
   interruptedDate?: Date
   finishedDate?: Date
 }
-
-interface CyclesContextType {
-  activeCycle: Cycle | undefined
-  activeCycleId: string | null
-  markCurrentCycleAsFinished: () => void
-  amountSecondsPassed: number
-  setSecondsPassed: (seconds: number) => void
-}
-
-export const CyclesContext = createContext({} as CyclesContextType)
 
 const newCycleFormValidationSchema = z.object({
   task: z.string().min(1, 'Informe a tarefa'),
@@ -36,10 +27,8 @@ const newCycleFormValidationSchema = z.object({
 type NewCycleFormData = z.infer<typeof newCycleFormValidationSchema>
 
 export default function Home() {
-  const [cycles, setCycles] = useState<Cycle[]>([])
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
-  const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
-
+  const { activeCycle, interruptCycle, createNewCycle } =
+    useContext(CyclesContext)
   const newCycleForm = useForm<NewCycleFormData>({
     resolver: zodResolver(newCycleFormValidationSchema),
     defaultValues: {
@@ -50,97 +39,45 @@ export default function Home() {
 
   const { handleSubmit, watch, reset } = newCycleForm
 
-  const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
-
-  function setSecondsPassed(seconds: number) {
-    setAmountSecondsPassed(seconds)
-  }
-
-  function markCurrentCycleAsFinished() {
-    setCycles((prevState) =>
-      prevState.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, finishedDate: new Date() }
-        } else {
-          return cycle
-        }
-      }),
-    )
-  }
-
-  function handleCreateNewCycle({ minutesAmount, task }: NewCycleFormData) {
-    const id = String(new Date().getTime())
-    const newCycle: Cycle = {
-      id,
-      minutesAmount,
-      task,
-      startDate: new Date(),
-    }
-
-    setCycles((prevState) => [...prevState, newCycle])
-    setActiveCycleId(id)
-    setAmountSecondsPassed(0)
-
+  function handleCreateCycle(data: NewCycleFormData) {
+    createNewCycle(data)
     reset()
-  }
-
-  function handleInterruptCycle() {
-    setActiveCycleId(null)
-    setCycles((prevState) =>
-      prevState.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, interruptedDate: new Date() }
-        } else {
-          return cycle
-        }
-      }),
-    )
   }
 
   const task = watch('task')
   const isSubmitDisabled = !task
 
   return (
-    <CyclesContext.Provider
-      value={{
-        activeCycle,
-        activeCycleId,
-        markCurrentCycleAsFinished,
-        amountSecondsPassed,
-        setSecondsPassed,
-      }}
-    >
-      <main className="flex-1 flex flex-col items-center justify-center">
-        <form
-          onSubmit={handleSubmit(handleCreateNewCycle)}
-          className="flex flex-col items-center gap-14"
-        >
-          <FormProvider {...newCycleForm}>
-            <NewCycleForm />
-          </FormProvider>
-          <Countdown />
+    <main className="flex-1 flex flex-col items-center justify-center">
+      <form
+        onSubmit={handleSubmit(handleCreateCycle)}
+        className="flex flex-col items-center gap-14"
+      >
+        <FormProvider {...newCycleForm}>
+          <NewCycleForm />
+        </FormProvider>
+        <Countdown />
 
-          {activeCycle ? (
-            <button
-              type="button"
-              onClick={handleInterruptCycle}
-              className="bg-red-600 text-neutral-200 flex items-center justify-center rounded-lg w-full p-4 gap-2 cursor-pointer font-bold hover:bg-red-700 transition"
-            >
-              <HandPalm size={24} />
-              Interromper
-            </button>
-          ) : (
-            <button
-              type="submit"
-              className="bg-emerald-600 text-neutral-200 flex items-center justify-center rounded-lg w-full p-4 gap-2 cursor-pointer font-bold enabled:hover:bg-emerald-700 transition disabled:bg-opacity-70 disabled:cursor-not-allowed"
-              disabled={isSubmitDisabled}
-            >
-              <Play size={24} />
-              Começar
-            </button>
-          )}
-        </form>
-      </main>
-    </CyclesContext.Provider>
+        {activeCycle ? (
+          <button
+            type="button"
+            onClick={interruptCycle}
+            className="bg-red-600 text-neutral-200 flex items-center justify-center rounded-lg w-full p-4 gap-2 cursor-pointer font-bold hover:bg-red-700 transition"
+          >
+            <HandPalm size={24} />
+            Interromper
+          </button>
+        ) : (
+          <button
+            type="submit"
+            className="bg-emerald-600 text-neutral-200 flex items-center justify-center rounded-lg w-full p-4 gap-2 cursor-pointer font-bold enabled:hover:bg-emerald-700 transition disabled:bg-opacity-70 disabled:cursor-not-allowed"
+            disabled={isSubmitDisabled}
+          >
+            <Play size={24} />
+            Começar
+          </button>
+        )}
+      </form>
+    </main>
   )
 }
