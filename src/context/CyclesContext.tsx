@@ -3,9 +3,10 @@ import {
   PropsWithChildren,
   useCallback,
   useMemo,
+  useReducer,
   useState,
 } from 'react'
-import { Cycle } from '../pages/Home'
+import { ActionTypes, Cycle, cyclesReducer } from '../reducers/cycles'
 
 interface CreateNewCycle {
   minutesAmount: number
@@ -26,9 +27,13 @@ interface CyclesContextType {
 export const CyclesContext = createContext({} as CyclesContextType)
 
 export function CyclesProvider({ children }: PropsWithChildren) {
-  const [cycles, setCycles] = useState<Cycle[]>([])
+  const [cyclesState, dispatch] = useReducer(cyclesReducer, {
+    cycles: [],
+    activeCycleId: null,
+  })
+  const { activeCycleId, cycles } = cyclesState
+
   const [amountSecondsPassed, setAmountSecondsPassed] = useState(0)
-  const [activeCycleId, setActiveCycleId] = useState<string | null>(null)
 
   const activeCycle = cycles.find((cycle) => cycle.id === activeCycleId)
 
@@ -37,15 +42,12 @@ export function CyclesProvider({ children }: PropsWithChildren) {
   }
 
   const markCurrentCycleAsFinished = useCallback(() => {
-    setCycles((prevState) =>
-      prevState.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, finishedDate: new Date() }
-        } else {
-          return cycle
-        }
-      }),
-    )
+    dispatch({
+      type: ActionTypes.MARK_CURRENT_CYCLE_AS_FINISHED,
+      payload: {
+        activeCycleId,
+      },
+    })
   }, [activeCycleId])
 
   function createNewCycle({ minutesAmount, task }: CreateNewCycle) {
@@ -57,22 +59,17 @@ export function CyclesProvider({ children }: PropsWithChildren) {
       startDate: new Date(),
     }
 
-    setCycles((prevState) => [...prevState, newCycle])
-    setActiveCycleId(id)
+    dispatch({ type: ActionTypes.ADD_NEW_CYCLE, payload: { newCycle } })
     setAmountSecondsPassed(0)
   }
 
   const interruptCycle = useCallback(() => {
-    setActiveCycleId(null)
-    setCycles((prevState) =>
-      prevState.map((cycle) => {
-        if (cycle.id === activeCycleId) {
-          return { ...cycle, interruptedDate: new Date() }
-        } else {
-          return cycle
-        }
-      }),
-    )
+    dispatch({
+      type: ActionTypes.INTERRUPT_CURRENT_CYCLE,
+      payload: {
+        activeCycleId,
+      },
+    })
   }, [activeCycleId])
 
   const memoizedValue = useMemo(
